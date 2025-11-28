@@ -102,6 +102,10 @@ fi
 
 # Add to system-wide profile
 echo "export PATH=\"$SOLANA_INSTALL_DIR/bin:\$PATH\"" > /etc/profile.d/solana.sh
+# Verify installation
+if ! command -v solana >/dev/null 2>&1; then
+  echo "[错误] Solana 安装失败，命令不可用"
+  exit 1
 fi
 
 echo "   - Solana ${SOLANA_VERSION} 安装成功"
