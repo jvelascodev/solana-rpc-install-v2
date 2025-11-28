@@ -51,7 +51,6 @@ exec solana-validator \
  --full-rpc-api \
  --private-rpc \
  --no-snapshot-fetch \
- --no-genesis-fetch \
  --no-os-network-limits-test \
  --no-accounts-db-index \
  --no-store-ledger \
