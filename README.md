@@ -1,10 +1,10 @@
 <div align="center">
-    <h1>⚡ Solana RPC Install</h1>
-    <h3><em>Production-ready Solana RPC node deployment in 3 simple steps</em></h3>
+    <h1>⚡ Solana Pruned RPC Install</h1>
+    <h3><em>Lightweight, Pruned Mainnet-Follower RPC Node Deployment</em></h3>
 </div>
 
 <p align="center">
-    <strong>Deploy battle-tested Solana RPC nodes with stable, proven configurations and source compilation from GitHub.</strong>
+    <strong>Deploy a minimal, high-performance Solana RPC node with pruned ledger and optimized settings.</strong>
 </p>
 
 <p align="center">
@@ -14,37 +14,21 @@
     <a href="https://github.com/0xfnzero/solana-rpc-install/blob/main/LICENSE">
         <img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License">
     </a>
-    <a href="https://github.com/0xfnzero/solana-rpc-install">
-        <img src="https://img.shields.io/github/stars/0xfnzero/solana-rpc-install?style=social" alt="GitHub stars">
-    </a>
-    <a href="https://github.com/0xfnzero/solana-rpc-install/network">
-        <img src="https://img.shields.io/github/forks/0xfnzero/solana-rpc-install?style=social" alt="GitHub forks">
-    </a>
-</p>
-
-<p align="center">
-    <img src="https://img.shields.io/badge/Bash-4EAA25?style=for-the-badge&logo=gnubash&logoColor=white" alt="Bash">
-    <img src="https://img.shields.io/badge/Solana-9945FF?style=for-the-badge&logo=solana&logoColor=white" alt="Solana">
-    <img src="https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white" alt="Ubuntu">
-    <img src="https://img.shields.io/badge/RPC-00D8FF?style=for-the-badge&logo=buffer&logoColor=white" alt="RPC Node">
 </p>
 
 <p align="center">
     <a href="README_CN.md">中文</a> |
-    <a href="README.md">English</a> |
-    <a href="https://fnzero.dev/">Website</a> |
-    <a href="https://t.me/fnzero_group">Telegram</a> |
-    <a href="https://discord.gg/vuazbGkqQE">Discord</a>
+    <a href="README.md">English</a>
 </p>
 
 ---
 
 ## 🎯 System Requirements
 
-**Minimum Configuration:**
-- **CPU**: AMD Ryzen 9 9950X (or equivalent)
-- **RAM**: 192 GB minimum (256 GB recommended)
-- **Storage**: 2-3x NVMe SSDs (1TB system + 2TB accounts OR combined 2TB+ accounts/ledger)
+**Recommended Configuration (Pruned Node):**
+- **CPU**: 16+ Cores (AMD Ryzen 9 or EPYC recommended)
+- **RAM**: 128 GB+ (192 GB+ recommended for stability)
+- **Storage**: 500GB+ NVMe SSD (Ledger is pruned to ~80GB, but accounts + snapshots need space)
 - **OS**: Ubuntu 20.04/22.04
 - **Network**: High-bandwidth connection (1 Gbps+)
 
@@ -62,65 +46,39 @@ cd solana-rpc-install
 # Step 1: Mount disks + System optimization (no reboot needed)
 bash 1-prepare.sh
 
-# Step 2: Install Solana from source (20-40 minutes)
+# Step 2: Install Solana (Pre-built Binaries)
+# This will install the latest stable Solana version and configure the pruned RPC node.
 bash 2-install-solana.sh
-# Enter version when prompted (e.g., v3.0.10)
+# Follow the prompts to select version (or auto-detect)
 
-# Step 3: Download snapshot and start node
+# Step 3: Reboot to apply system optimizations
+reboot
+
+# Step 4: Download snapshot and start node
+cd /root/solana-rpc-install
 bash 3-start.sh
 ```
 
-## ⚠️ Critical: Memory Management Details (Required for 128GB Systems)
+## ⚙️ Configuration Details
 
-> **📌 Why Swap Might Be Needed?**
-> - **Memory peaks can exceed 128GB** during initial sync (115-130GB)
-> - Without swap, node may crash with OOM
-> - Swap provides safety buffer during sync phase
-> - After sync stabilizes, memory usage drops to 85-105GB
+This installer sets up a **Pruned Mainnet-Follower Node**:
 
-### 🔧 Swap Management (Optional for 128GB Systems)
+- **No Voting**: Runs as a follower only, no voting keys required.
+- **Pruned Ledger**: Ledger size limited to 80,000,000 slots (~80GB) to save disk space.
+- **No Accounts Index**: Disabled to reduce memory and disk usage (note: limits some RPC calls like `getProgramAccounts`).
+- **Dynamic Ports**: Uses ports 8000-8010.
+- **Geyser Plugin**: Includes Yellowstone gRPC plugin support.
 
-**Add Swap** (If needed during sync)
+### 🔌 Network Ports
 
-```bash
-# Only if you see high memory pressure during sync
-cd /root/solana-rpc-install
-sudo bash add-swap-128g.sh
+Ensure these ports are open in your firewall:
 
-# Script automatically checks:
-# ✓ Only adds swap if system RAM < 160GB
-# ✓ Skips if swap already exists
-# ✓ Adds 32GB swap with swappiness=10 (minimal usage)
-```
-
-**Remove Swap** (After sync completes)
-
-Once synchronization completes, memory usage stabilizes at 85-105GB, and you can remove swap for optimal performance:
-
-```bash
-# Check current memory usage
-systemctl status sol | grep Memory
-
-# If memory peak < 105GB, safe to remove swap
-cd /root/solana-rpc-install
-sudo bash remove-swap.sh
-```
-
-### 📊 Decision Guidelines
-
-| Memory Peak | Recommended Action |
-|-------------|-------------------|
-| **< 105GB** | ✅ Can remove swap for optimal performance |
-| **105-110GB** | ⚠️ Recommended to keep swap as buffer |
-| **> 110GB** | 🔴 Must keep swap to prevent OOM |
-
-**Note**: If memory issues occur after removing swap, you can always add it back:
-```bash
-cd /root/solana-rpc-install
-sudo bash add-swap-128g.sh
-```
-
----
+| Port | Protocol | Purpose |
+|------|----------|---------|
+| **8899** | TCP | RPC HTTP Endpoint |
+| **8900** | TCP | RPC WebSocket Endpoint |
+| **10900** | TCP | Yellowstone gRPC Endpoint |
+| **8000-8020** | TCP/UDP | Gossip & TVU (Dynamic Range) |
 
 ## 📊 Monitoring & Management
 
@@ -131,148 +89,28 @@ journalctl -u sol -f
 # Performance monitoring
 bash /root/performance-monitor.sh snapshot
 
-# Health check (available after 30 minutes)
+# Health check
 /root/get_health.sh
 
 # Sync progress
 /root/catchup.sh
 ```
 
-## ✨ Key Features
+## ⚠️ Memory Management
 
-### 🔧 Battle-Tested Configuration Philosophy
+For 128GB systems, swap is configured to prevent OOM during initial sync.
+- **Sync Phase**: Memory usage may peak (115-130GB).
+- **Stable Phase**: Memory usage typically drops to 85-105GB.
 
-All configurations are based on **proven production deployments** with thousands of hours of uptime:
+Helper scripts are included to manage swap:
+```bash
+# Add swap if needed
+sudo bash add-swap-128g.sh
 
-- **Conservative Stability > Aggressive Optimization**
-- **Simple Defaults > Complex Customization**
-- **Proven Performance > Theoretical Gains**
-
-### 📦 System Optimizations (No Reboot Required)
-
-- 🌐 **TCP Congestion Control**: Westwood (classic, stable algorithm)
-- 🔧 **TCP Buffers**: 12MB (conservative, low-latency optimized)
-- 💾 **File Descriptors**: 1M limit (sufficient for production)
-- 🛡️ **Memory Management**: swappiness=30 (balanced approach)
-- 🔄 **VM Settings**: Conservative dirty ratios for stability
-
-### ⚡ Yellowstone gRPC Configuration
-
-- ✅ **Compression Enabled**: gzip + zstd (reduces memory copy overhead)
-- 📦 **Conservative Buffers**: 50M snapshot, 200K channel (fast processing)
-- 🎯 **Proven Defaults**: System-managed Tokio, default HTTP/2 settings
-- 🛡️ **Resource Protection**: Strict filter limits prevent abuse
-
-### 🚀 Deployment Features
-
-- 📦 **Source Compilation**: Latest Agave version from GitHub
-- 🔄 **Automatic Disk Management**: Smart disk detection and mounting
-- 🛡️ **Production Ready**: Systemd service with memory limits and OOM protection
-- 📊 **Monitoring Tools**: Performance tracking and health checks included
-
-## 🔌 Network Ports
-
-| Port | Protocol | Purpose |
-|------|----------|---------|
-| **8899** | HTTP | RPC endpoint |
-| **8900** | WebSocket | Real-time subscriptions |
-| **10900** | gRPC | High-performance data streaming |
-| **8000-8025** | TCP/UDP | Validator communication (dynamic) |
-
-## 📈 Performance Metrics
-
-- **Snapshot Download**: Network-dependent (typically 200MB - 1GB/s)
-- **Memory Usage**: 60-110GB during sync, 85-105GB stable (optimized for 128GB systems)
-- **Sync Time**: 1-3 hours (from snapshot)
-- **CPU Usage**: Multi-core optimized (32+ cores recommended)
-- **Stability**: Proven configuration with >99.9% uptime in production
-
-## 🛠️ Architecture
-
+# Remove swap (only if memory < 105GB stable)
+sudo bash remove-swap.sh
 ```
-┌─────────────────────────────────────────────────────────┐
-│                   Solana RPC Node Stack                  │
-├─────────────────────────────────────────────────────────┤
-│  Agave Validator (Latest v3.0.x from source)            │
-│  ├─ Yellowstone gRPC Plugin v10.0.1 (Data streaming)   │
-│  ├─ RPC HTTP/WebSocket (Port 8899/8900)                 │
-│  └─ Accounts & Ledger (Optimized RocksDB)               │
-├─────────────────────────────────────────────────────────┤
-│  System Optimizations (Battle-Tested)                   │
-│  ├─ TCP: 12MB buffers, Westwood congestion control      │
-│  ├─ Memory: swappiness=30, balanced VM settings         │
-│  ├─ File Descriptors: 1M limit, sufficient for prod     │
-│  └─ Stability: Conservative defaults, proven in prod    │
-├─────────────────────────────────────────────────────────┤
-│  Yellowstone gRPC (Open-Source Tested Config)           │
-│  ├─ Compression: gzip+zstd enabled (fast processing)    │
-│  ├─ Buffers: 50M snapshot, 200K channel (low latency)   │
-│  ├─ Defaults: System-managed, no over-optimization      │
-│  └─ Protection: Strict filters, resource limits         │
-├─────────────────────────────────────────────────────────┤
-│  Infrastructure                                          │
-│  ├─ Systemd Service (Auto-restart, graceful shutdown)   │
-│  ├─ Multi-disk Setup (System/Accounts/Ledger)           │
-│  └─ Monitoring Tools (Performance/Health/Catchup)       │
-└─────────────────────────────────────────────────────────┘
-```
-
-## 🧪 Configuration Philosophy
-
-### Why Conservative Configuration?
-
-Based on extensive production testing, we discovered:
-
-1. **Compression Enabled = Lower Latency**
-   - Even on localhost, compressed data transfers faster in memory
-   - CPU overhead is minimal, latency reduction is significant
-
-2. **Smaller Buffers = Faster Processing**
-   - 50M snapshot vs 250M: Less queue delay, faster throughput
-   - 200K channel vs 1.5M: Reduced "buffer bloat" latency
-
-3. **System Defaults = Better Stability**
-   - No custom Tokio threads: Let system auto-manage
-   - No custom HTTP/2 settings: Defaults are already optimized
-   - Fewer custom parameters = Fewer potential issues
-
-4. **Proven in Production**
-   - Thousands of hours of uptime
-   - Tested across different hardware configurations
-   - Battle-tested under real-world load
-
-### 📚 Backup Configuration
-
-If you need the aggressive optimization config for specific use cases:
-- Extreme config backed up as `yellowstone-config-extreme-backup.json`
-- Accessible in repository history (commit 6cc31d9)
-
-## 📚 Documentation
-
-- **Installation Guide**: You're reading it!
-- **Troubleshooting**: Check logs with `journalctl -u sol -f`
-- **Configuration**: All optimizations included by default
-- **Monitoring**: Use provided helper scripts
-- **Optimization Details**: See `YELLOWSTONE_OPTIMIZATION.md`
-
-## 🤝 Support & Community
-
-- **Telegram**: [https://t.me/fnzero_group](https://t.me/fnzero_group)
-- **Discord**: [https://discord.gg/vuazbGkqQE](https://discord.gg/vuazbGkqQE)
-- **Issues**: [GitHub Issues](https://github.com/0xfnzero/solana-rpc-install/issues)
-- **Website**: [https://fnzero.dev/](https://fnzero.dev/)
 
 ## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-<div align="center">
-    <p>
-        <strong>⭐ If this project helps you, please give us a Star!</strong>
-    </p>
-    <p>
-        Made with ❤️ by <a href="https://github.com/0xfnzero">fnzero</a>
-    </p>
-</div>

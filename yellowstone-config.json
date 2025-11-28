@@ -1,5 +1,5 @@
 {
-  "libpath": "/root/sol/bin/yellowstone-grpc-geyser-release/lib/libyellowstone_grpc_geyser.so",
+  "libpath": "/root/sol/bin/libyellowstone_grpc_geyser.so",
   "log": {
       "level": "info"
   },

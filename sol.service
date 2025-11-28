@@ -39,7 +39,7 @@ KillSignal=SIGINT
 # Working directory
 WorkingDirectory=/root/sol
 # Startup command
-ExecStart=/root/sol/bin/validator.sh
+ExecStart=/root/sol/bin/validator-rpc.sh
 # Pre-start validation
 ExecStartPre=/bin/bash -c 'test -f /root/sol/bin/validator-keypair.json'
 ExecStartPre=/bin/bash -c 'test -d /root/sol/ledger'
