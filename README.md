@@ -54,7 +54,7 @@ bash 2-install-solana.sh
 # Step 3: Reboot to apply system optimizations
 reboot
 
-# Step 4: Download snapshot and start node
+# Step 4: Start node
 cd /root/solana-rpc-install
 bash 3-start.sh
 ```
